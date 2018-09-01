@@ -27,5 +27,18 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    /*
+    * most significant bits meaning:
+    * 00 01 RAM
+    * 10 SCREEN
+    * 11 KEYBOARD
+    */
+
+    DMux4Way(in=load, sel=address[13..14], a=l1, b=l2, c=loads, d=loadk);
+    Or(a=l1, b=l2, out=loadr);
+    RAM16K(in=in, load=loadr, address=address[0..13], out=ramout);
+    Keyboard(out=keyout);
+    Screen(in=in, load=loads, address=address[0..12], out=screenout);
+    Mux4Way16(a=ramout, b=ramout, c=screenout, d=keyout, sel=address[13..14],
+                out=out);
 }

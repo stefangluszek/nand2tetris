@@ -39,5 +39,55 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    /**
+    * 15    12 11 10  9  8  7  6  5  4  3  2  1  0
+    * i  xx a  c1 c2 c3 c4 c5 c6 d1 d2 d3 j1 j2 j3
+    *
+    * i
+    * 0 A instruction
+    * 1 C instruction
+    *
+    * d1  d2  d3
+    * A   D   M
+    */
+    Mux16(a[0..14]=instruction[0..14], a[15]=false, b=ALUout,
+            sel=instruction[15], out=toA);
+
+    Not(in=instruction[15], out=notA);
+    Or(a=notA, b=instruction[5], out=loadA);
+    ARegister(in=toA, load=loadA, out=outA, out[0..14]=addressM);
+
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=ALUout, load=loadD, out=outD);
+
+    And(a=instruction[3], b=instruction[15], out=writeM);
+
+    /*
+     * zr True if out = 0
+     * ng True if out < 0
+    */
+    ALU(x=outD, y=toALU, zx=instruction[11], nx=instruction[10],
+            zy=instruction[9], ny=instruction[8], f=instruction[7],
+            no=instruction[6], out=ALUout, out=outM, zr=zr, ng=ng);
+
+    And(a=instruction[12], b=instruction[15], out=AorM);
+    Mux16(a=outA, b=inM, sel=AorM, out=toALU);
+
+    And(a=instruction[15], b=instruction[2], out=lt0);
+    And(a=ng, b=lt0, out=j1);
+
+    And(a=instruction[15], b=instruction[1], out=eq0);
+    And(a=zr, b=eq0, out=j2);
+
+    And(a=instruction[15], b=instruction[0], out=gt0);
+    Not(in=zr, out=notzr);
+    Not(in=ng, out=notng);
+    And(a=notzr, b=notng, out=notzrng);
+    And(a=notzrng, b=gt0, out=j3);
+
+    Or(a=j1, b=j2, out=j12);
+    Or(a=j12, b=j3, out=jump);
+
+    PC(in=outA, load=jump, inc=true, reset=reset, out[0..14]=pc,
+        out[15]=false);
 }
