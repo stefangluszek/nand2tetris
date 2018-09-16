@@ -121,3 +121,22 @@ D=M
 @%s
 M=D
 ";
+
+final constant push_static_template =
+#"
+@%s.%d
+D=M
+@SP
+AM=M+1
+A=A-1
+M=D
+";
+
+final constant pop_static_template =
+#"
+@SP
+AM=M-1;
+D=M
+@%s.%d
+M=D
+";

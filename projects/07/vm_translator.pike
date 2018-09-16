@@ -21,6 +21,10 @@ void handle_push_command(array(string) line, string file, int n)
         case "constant":
             b->add(sprintf(push_constant_template, (int)line[2]));
             break;
+        case "static":
+            b->add(sprintf(push_static_template, basename(file[..<3]),
+                            (int)line[2]));
+            break;
         case "local":
             b->add(sprintf(push_segment_template, (int)line[2], "LCL"));
             break;
@@ -62,6 +66,10 @@ void handle_pop_command(array(string) line, string file, int n)
                     sizeof(line) - 1);
     }
     switch(line[1]){
+        case "static":
+            b->add(sprintf(pop_static_template, basename(file[..<3]),
+                            (int)line[2]));
+            break;
         case "local":
             b->add(sprintf(pop_segment_template, "LCL", (int)line[2]));
             break;
